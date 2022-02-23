@@ -1,46 +1,54 @@
-import { useState } from "react";
-
-const History = (props) => {
-  if (props.allClicks.length === 0) {
-    return (
-      <p>This app needs button to be pressed :)</p>
-      )
-  }
-  return (
-    <div>
-      button press history: {props.allClicks.join(' ')}
-    </div>
-    )
-}
-
-const Button = ({handleClick, text}) => (
-  <button onClick = {handleClick}>{text}</button>
-  )
+import Course from './components/Course'
 
 const App = () => {
-  const [left, setLeft] = useState(0)
-  const [right, setRight] = useState(0)
-  const [allClicks, setAll] = useState([])
+  const courses = [
+    {
+      name: 'Half Stack application development',
+      id: 1,
+      parts: [
+        {
+          name: 'Fundamentals of React',
+          exercises: 10,
+          id: 1
+        },
+        {
+          name: 'Using props to pass data',
+          exercises: 7,
+          id: 2
+        },
 
-  const HandleLeftClick = () => {
-    setAll(allClicks.concat('L'))
-    setLeft(left + 1)
-  }
+        {
+          name: 'State of a component',
+          exercises: 14,
+          id: 3
+        },
+        {
+          name: 'Redux',
+          exercises: 11,
+          id: 4
+        }
+      ]
+    }, 
+    {
+      name: 'Node.js',
+      id: 2,
 
-  const HandleRightClick = () => {
-    setAll(allClicks.concat('R'))
-    setRight(right + 1)
-  }
+      parts: [
+        {
+          name: 'Routing',
+          exercises: 3,
+          id: 1
+        },
+        {
+          name: 'Middlewares',
+          exercises: 7,
+          id: 2
+        }
+      ]
+    }
+  ]
 
-  return (
-    <>
-      {left}
-      <Button handleClick = {HandleLeftClick} text='left'/>
-      <Button handleClick = {HandleRightClick} text='right'/>
-      {right}
-      <History allClicks={allClicks}/>
-    </>
-  );
-};
+  return <Course course={courses} />
+}
 
-export default App;
+export default App

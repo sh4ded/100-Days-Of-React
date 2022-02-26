@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import Filter from './components/Filter'
 import Form from './components/Form'
 import Person from './components/Person'
-import axios from 'axios'
+import addNumber from './services/numbers'
+import Notification from './components/Notification'
+import './index.css'
+
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -10,16 +13,18 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [newSearch, setNewSearch] = useState("");
-  const hook = () => {
-    axios
-    .get('http://localhost:3001/persons')
-    .then(response => {
-      setPersons(response.data)
-      setCachePersons(response.data)
-      })
-  }
+  const [addMessage, setAddMessage] = useState(null);
+  
 
-  useEffect(hook, [])
+  useEffect(() => {
+    addNumber
+    .getAll()
+    .then(initialNumbers => {
+      console.log(initialNumbers)
+      setPersons(initialNumbers)
+      setCachePersons(initialNumbers)
+    })
+  }, [])
 
   const handleNameChange = (event) => {
     console.log(event.target.value);
@@ -47,27 +52,67 @@ const App = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (persons.reduce((result, it) => result | (it.name === newName && it.number === newNumber), false)) {
-      alert(`${newName} is already added to phonebook`);
+      setAddMessage(`${newName} is already added to phonebook`);
+      setTimeout(() => {
+        setAddMessage(null)
+      }, 5000)
+    }
+    else if (persons.reduce((result, it) => result | (it.name === newName && it.number !== newNumber), false)) {
+      const res = window.confirm(`${newName} is already added to phonebook. Want to replace old number with new number?`)
+      if (res)
+      {
+      const upd = persons.filter(e => e.name === newName)[0].id
+      console.log(upd)
+      const updNumber = {
+        name: newName,
+        number: newNumber
+      }
+      addNumber
+      .update(upd, updNumber)
+      .then(returnedNumber => {
+        setPersons(persons.map(e => e.id === upd ? returnedNumber : e))
+        setCachePersons(cachePersons.map(e => e.id === upd ? returnedNumber : e))
+        setAddMessage(`details of ${newName} updated`)
+        setTimeout(() => {
+      setAddMessage(null)
+    }, 5000)
+      })
+      .catch(error => {
+        setAddMessage(`${newName} has been deleted :(`)
+        setTimeout(() => {
+          setAddMessage(null)
+        }, 5000)
+        })
+      .then(response => {
+        addNumber
+        .getAll()
+        .then(initialNumbers => {
+          setPersons(initialNumbers)
+          setCachePersons(initialNumbers)
+        }
+      )}
+      )
+    }
     }
     else
     {
-      setPersons(
-        persons.concat({
-          id: persons.length+1,
+      const newPerson = {
           name: newName,
           number: newNumber
-        })
-      );
+        }
+      addNumber
+      .create(newPerson)
+      .then(addedNumber => {
+      setPersons(persons.concat(addedNumber))
       if (newName.toLowerCase().includes(newSearch.toLowerCase()))
       {
-      setCachePersons(
-        cachePersons.concat({
-          id: persons.length+1,
-          name: newName,
-          number: newNumber
-        })
-      );
+      setCachePersons(cachePersons.concat(addedNumber))
     }
+    setAddMessage(`${newName} added`)
+    setTimeout(() => {
+      setAddMessage(null)
+    }, 5000)
+    })
     }
     setNewName("");
     setNewNumber("");
@@ -76,6 +121,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={addMessage} />
       <form onSubmit={handleSubmit}>
       <Filter value={newSearch} onChange={handleSearch} />
       <h2>Add new</h2>
@@ -86,7 +132,8 @@ const App = () => {
         </div>
       </form>
       <h2>Numbers</h2>
-      <Person persons={cachePersons} />
+      <Person persons={cachePersons} modify={setCachePersons}
+      cache={persons} cmod={setPersons}/>
     </div>
   );
 };

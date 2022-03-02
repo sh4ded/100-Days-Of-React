@@ -62,16 +62,16 @@ const App = () => {
       if (res)
       {
       const upd = persons.filter(e => e.name === newName)[0].id
-      console.log(upd)
       const updNumber = {
+        id: upd,
         name: newName,
         number: newNumber
       }
       addNumber
       .update(upd, updNumber)
-      .then(returnedNumber => {
-        setPersons(persons.map(e => e.id === upd ? returnedNumber : e))
-        setCachePersons(cachePersons.map(e => e.id === upd ? returnedNumber : e))
+      .then(returnedPersons => {
+        setPersons(returnedPersons)
+        setCachePersons(returnedPersons.filter(e => e.name.toLowerCase().includes(newSearch.toLowerCase())))
         setAddMessage(`details of ${newName} updated`)
         setTimeout(() => {
       setAddMessage(null)
@@ -88,7 +88,7 @@ const App = () => {
         .getAll()
         .then(initialNumbers => {
           setPersons(initialNumbers)
-          setCachePersons(initialNumbers)
+          setCachePersons(initialNumbers.filter(e => e.name.toLowerCase().includes(newSearch.toLowerCase())))
         }
       )}
       )
@@ -103,11 +103,9 @@ const App = () => {
       addNumber
       .create(newPerson)
       .then(addedNumber => {
-      setPersons(persons.concat(addedNumber))
-      if (newName.toLowerCase().includes(newSearch.toLowerCase()))
-      {
-      setCachePersons(cachePersons.concat(addedNumber))
-    }
+        console.log(addedNumber)
+      setPersons(addedNumber)
+      setCachePersons(addedNumber.filter(e => e.name.toLowerCase().includes(newSearch.toLowerCase())))
     setAddMessage(`${newName} added`)
     setTimeout(() => {
       setAddMessage(null)

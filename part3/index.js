@@ -116,6 +116,16 @@ app.post('/api/persons', (request, response) => {
 	
 })
 
+app.put('/api/persons/:id', (request, response) => {
+	const id = Number(request.params.id)
+	persons.forEach(e => {
+  if (e.id === request.body.id) {
+    e.number = request.body.number
+  }
+})
+	response.json(persons)
+})
+
 const unknownEndpoint = (request, response) => {
 	response.status(404).send({
 		error: 'No endpoint found'
@@ -124,7 +134,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`)
 })
